@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Local Chat Application</title>
+    <HTA:APPLICATION
+        ID="ChatApp"
+        APPLICATIONNAME="Local Chat Application"
+        BORDER="thin"
+        CAPTION="yes"
+        SHOWINTASKBAR="yes"
+        SINGLEINSTANCE="yes"
+        SYSMENU="yes"
+        WINDOWSTATE="normal"
+        CONTEXTMENU="yes"
+        SELECTION="yes"
+    >
+    <script language="VBScript">
+        Dim fso, conversationFile
+        Set fso = CreateObject("Scripting.FileSystemObject")
+        Set conversationFile = fso.OpenTextFile("conversation.log", 8, True)
+
+        Sub Window_OnLoad
+            MessageInput.focus
+        End Sub
+
+        Sub SendMessage()
+            Dim message
+            message = MessageInput.Value
+            If message <> "" Then
+                If message = "exit" Then
+                    conversationFile.Close
+                    window.close
+                End If
+                Dim currentTime
+                currentTime = Now
+                ConversationArea.Value = ConversationArea.Value & "[" & currentTime & "] Message: " & message & vbCrLf
+                conversationFile.WriteLine "[" & currentTime & "] Message: " & message
+                MessageInput.Value = ""
+                ScrollConversationAreaToEnd
+            End If
+        End Sub
+
+        Function HandleKeyPress()
+            If window.event.keyCode = 13 Then ' Enter key
+                SendMessage
+            End If
+        End Function
+
+        Sub ScrollConversationAreaToEnd()
+            ConversationArea.scrollTop = ConversationArea.scrollHeight
+        End Sub
+    </script>
+    <style>
+        #ConversationArea {
+            width: 100%;
+            height: 400px; /* Adjust the height as needed */
+            resize: none;
+            overflow-y: scroll;
+        }
+    </style>
+</head>
+<body onkeypress="HandleKeyPress()">
+    <textarea id="ConversationArea" readonly></textarea><br>
+    <input type="text" id="MessageInput" style="width: 80%;">
+    <input type="button" value="Send" onclick="SendMessage()">
+</body>
+</html>
